@@ -129,7 +129,7 @@ class FunctionalGroupExtractor:
         The conditions for marking carbon atoms are (quoted from Ertl):
             "- atoms connected by non-aromatic double or triple bond to any
             heteroatom
-            - atoms in nonaromatic carbon–carbon double or triple bonds
+            - atoms in nonaromatic carbon-carbon double or triple bonds
             - acetal carbons, i.e. sp3 carbons connected to two or more oxygens,
             nitrogens or sulfurs; these O, N or S atoms must have only single bonds
             - all atoms in oxirane, aziridine and thiirane rings"
@@ -174,7 +174,7 @@ class FunctionalGroupExtractor:
 
             ons = len([n for n in neighbor_spec if n in ["O", "N", "S"]])
 
-            if len(neighbors.keys()) == 4 and ons >= 2:
+            if len(neighbors) == 4 and ons >= 2:
                 specials.add(node)
 
         # Condition four: oxirane/aziridine/thiirane rings

@@ -324,7 +324,7 @@ class ElementBase(Enum):
     @property
     def electron_affinity(self) -> float:
         """
-        First ionization energy of element.
+        The amount of energy released when an electron is attached to a neutral atom.
         """
         return self._data["Electron affinity"]
 
@@ -598,6 +598,22 @@ class ElementBase(Enum):
             if data["Atomic no"] == z:
                 return Element(sym)
         raise ValueError(f"No element with this atomic number {z}")
+
+    @staticmethod
+    def from_name(name: str) -> Element:
+        """
+        Get an element from its long name.
+
+        Args:
+            name: Long name of the element, e.g. 'Hydrogen' or
+                  'Iron'. Not case-sensitive.
+        Returns:
+            Element with the name 'name'
+        """
+        for sym, data in _pt_data.items():
+            if data["Name"] == name.capitalize():
+                return Element(sym)
+        raise ValueError(f"No element with the name {name}")
 
     @staticmethod
     def from_row_and_group(row: int, group: int) -> Element:
