@@ -99,7 +99,7 @@ class LobsterNeighbors(NearNeighbors):
             id_blist_sg2: (str) Identity of data in filename_blist_sg2,
                 e.g., "icoop" or "icobi"
         """
-        self.ICOHP = Icohplist(are_coops=are_coops, are_cobis=are_cobis,filename=filename_ICOHP)
+        self.ICOHP = Icohplist(are_coops=are_coops, are_cobis=are_cobis, filename=filename_ICOHP)
         self.Icohpcollection = self.ICOHP.icohpcollection
         self.structure = structure
         self.limits = limits
@@ -144,7 +144,7 @@ class LobsterNeighbors(NearNeighbors):
                 are_cobis=are_cobis_id2,
             )
 
-        #if are_coops:
+        # if are_coops:
         #    raise ValueError("Algorithm only works correctly for ICOHPLIST.lobster")
 
         # will check if the additional condition is correctly delivered
@@ -404,7 +404,6 @@ class LobsterNeighbors(NearNeighbors):
                     number_bonds += 1
                     final_isites.append(ival)
         return summed_icohps, list_icohps, number_bonds, labels, atoms, final_isites
-
 
     def plot_cohps_of_neighbors(
         self,
@@ -1190,7 +1189,7 @@ class LobsterNeighbors(NearNeighbors):
                     extremum_based = min(list_icohps) * percentage
                 else:
                     extremum_based = max(list_icohps) * percentage
-                #extremum_based = min(list_icohps) * percentage
+                # extremum_based = min(list_icohps) * percentage
 
             elif additional_condition == 3:
                 # ONLY_ANION_CATION_BONDS_AND_NO_ELEMENT_TO_SAME_ELEMENT_BONDS = 3
@@ -1208,7 +1207,7 @@ class LobsterNeighbors(NearNeighbors):
                     extremum_based = min(list_icohps) * percentage
                 else:
                     extremum_based = max(list_icohps) * percentage
-                #extremum_based = min(list_icohps) * percentage
+                # extremum_based = min(list_icohps) * percentage
             elif additional_condition == 4:
                 list_icohps = []
                 for value in icohpcollection._icohplist.values():
@@ -1219,7 +1218,7 @@ class LobsterNeighbors(NearNeighbors):
                     extremum_based = min(list_icohps) * percentage
                 else:
                     extremum_based = max(list_icohps) * percentage
-                #extremum_based = min(list_icohps) * percentage
+                # extremum_based = min(list_icohps) * percentage
             elif additional_condition == 5:
                 # DO_NOT_CONSIDER_ANION_CATION_BONDS=5
                 list_icohps = []
@@ -1236,7 +1235,7 @@ class LobsterNeighbors(NearNeighbors):
                     extremum_based = min(list_icohps) * percentage
                 else:
                     extremum_based = max(list_icohps) * percentage
-                #extremum_based = min(list_icohps) * percentage
+                # extremum_based = min(list_icohps) * percentage
 
             elif additional_condition == 6:
                 # ONLY_CATION_CATION_BONDS=6
@@ -1254,7 +1253,7 @@ class LobsterNeighbors(NearNeighbors):
                     extremum_based = min(list_icohps) * percentage
                 else:
                     extremum_based = max(list_icohps) * percentage
-                #extremum_based = min(list_icohps) * percentage
+                # extremum_based = min(list_icohps) * percentage
 
         if not self.are_coops and not self.are_cobis:
             max_here = min(extremum_based, -0.1)
