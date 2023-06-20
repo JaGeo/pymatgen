@@ -1,0 +1,5 @@
+fix augmentation bug in LinearAssignment cython code
+
+
+Former-commit-id: f369504546e365cc0dcd7dce27e27556ed6d1dd2 [formerly 08d8d0e737f0ada323ed231fda89c7852a886157]
+Former-commit-id: 4171b8f537a17e20da531d61f4141cbec3db3652

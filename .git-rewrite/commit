@@ -1,0 +1,10 @@
+tree c7d0489d78764b5241af5001fb5f4d250368ac3d
+parent b135e616f2141f611d41569f4553260684399cf0
+author __sp__ <ongsp@eng.ucsd.edu> 1453444562 -0800
+committer __sp__ <ongsp@eng.ucsd.edu> 1453444562 -0800
+
+Simplificaton of get_bandstructure.
+
+
+Former-commit-id: 6dd2c67d02a292e256758190d1e7359b6a388803 [formerly d98a528549f77dee24953d0a3960aca7dff82b0b]
+Former-commit-id: 924b74443035c8e0ca58c65eb173dbba0dee7f70
