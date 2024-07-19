@@ -1440,6 +1440,7 @@ class CubicSupercellTransformation(AbstractTransformation):
         min_atoms: int | None = None,
         max_atoms: int | None = None,
         min_length: float = 15.0,
+        max_length: float = 25.0,
         force_diagonal: bool = False,
         force_90_degrees: bool = False,
         angle_tolerance: float = 1e-3,
@@ -1459,6 +1460,7 @@ class CubicSupercellTransformation(AbstractTransformation):
         self.min_atoms = min_atoms or -np.inf
         self.max_atoms = max_atoms or np.inf
         self.min_length = min_length
+        self.max_length = max_length
         self.force_diagonal = force_diagonal
         self.force_90_degrees = force_90_degrees
         self.angle_tolerance = angle_tolerance
@@ -1490,66 +1492,113 @@ class CubicSupercellTransformation(AbstractTransformation):
             st = SupercellTransformation(self.transformation_matrix)
             return st.apply_transformation(structure)
 
-        # target_threshold is used as the desired cubic side lengths
-        target_sc_size = self.min_length
-        while sc_not_found:
-            target_sc_lat_vecs = np.eye(3, 3) * target_sc_size
-            self.transformation_matrix = target_sc_lat_vecs @ np.linalg.inv(lat_vecs)  # type: ignore
+        if not self.force_90_degrees:
+            # target_threshold is used as the desired cubic side lengths
+            target_sc_size = self.min_length
+            while sc_not_found:
+                target_sc_lat_vecs = np.eye(3, 3) * target_sc_size
+                self.transformation_matrix = target_sc_lat_vecs @ np.linalg.inv(lat_vecs)  # type: ignore
 
-            # round the entries of T and force T to be non-singular
-            self.transformation_matrix = _round_and_make_arr_singular(  # type: ignore[assignment]
-                self.transformation_matrix  # type: ignore[arg-type]
-            )
-
-            proposed_sc_lat_vecs = self.transformation_matrix @ lat_vecs
-
-            # Find the shortest dimension length and direction
-            a = proposed_sc_lat_vecs[0]
-            b = proposed_sc_lat_vecs[1]
-            c = proposed_sc_lat_vecs[2]
-
-            length1_vec = c - _proj(c, a)  # a-c plane
-            length2_vec = a - _proj(a, c)
-            length3_vec = b - _proj(b, a)  # b-a plane
-            length4_vec = a - _proj(a, b)
-            length5_vec = b - _proj(b, c)  # b-c plane
-            length6_vec = c - _proj(c, b)
-            length_vecs = np.array(
-                [
-                    length1_vec,
-                    length2_vec,
-                    length3_vec,
-                    length4_vec,
-                    length5_vec,
-                    length6_vec,
-                ]
-            )
-
-            # Get number of atoms
-            st = SupercellTransformation(self.transformation_matrix)
-            superstructure = st.apply_transformation(structure)
-            n_atoms = len(superstructure)
-
-            # Check if constraints are satisfied
-            if (
-                np.min(np.linalg.norm(length_vecs, axis=1)) >= self.min_length
-                and self.min_atoms <= n_atoms <= self.max_atoms
-            ) and (
-                not self.force_90_degrees
-                or np.all(np.absolute(np.array(superstructure.lattice.angles) - 90) < self.angle_tolerance)
-            ):
-                return superstructure
-
-            # Increase threshold until proposed supercell meets requirements
-            target_sc_size += 0.1
-            if n_atoms > self.max_atoms:
-                raise AttributeError(
-                    "While trying to solve for the supercell, the max "
-                    "number of atoms was exceeded. Try lowering the number"
-                    "of nearest neighbor distances."
+                # round the entries of T and force T to be non-singular
+                self.transformation_matrix = _round_and_make_arr_singular(  # type: ignore[assignment]
+                    self.transformation_matrix  # type: ignore[arg-type]
                 )
-        raise AttributeError("Unable to find cubic supercell")
 
+                proposed_sc_lat_vecs = self.transformation_matrix @ lat_vecs
+
+                # Find the shortest dimension length and direction
+                a = proposed_sc_lat_vecs[0]
+                b = proposed_sc_lat_vecs[1]
+                c = proposed_sc_lat_vecs[2]
+
+                length1_vec = c - _proj(c, a)  # a-c plane
+                length2_vec = a - _proj(a, c)
+                length3_vec = b - _proj(b, a)  # b-a plane
+                length4_vec = a - _proj(a, b)
+                length5_vec = b - _proj(b, c)  # b-c plane
+                length6_vec = c - _proj(c, b)
+                length_vecs = np.array(
+                    [
+                        length1_vec,
+                        length2_vec,
+                        length3_vec,
+                        length4_vec,
+                        length5_vec,
+                        length6_vec,
+                    ]
+                )
+
+                # Get number of atoms
+                st = SupercellTransformation(self.transformation_matrix)
+                superstructure = st.apply_transformation(structure)
+                n_atoms = len(superstructure)
+
+                # Check if constraints are satisfied
+                if (
+                    np.min(np.linalg.norm(length_vecs, axis=1)) >= self.min_length
+                    and self.min_atoms <= n_atoms <= self.max_atoms
+                ) and (
+                    not self.force_90_degrees
+                    or np.all(np.absolute(np.array(superstructure.lattice.angles) - 90) < self.angle_tolerance)
+                ):
+                    return superstructure
+
+                # Increase threshold until proposed supercell meets requirements
+                target_sc_size += 0.1
+                if n_atoms > self.max_atoms:
+                    raise AttributeError(
+                        "While trying to solve for the supercell, the max "
+                        "number of atoms was exceeded. Try lowering the number"
+                        "of nearest neighbor distances."
+                    )
+            raise AttributeError("Unable to find cubic supercell")
+        else:
+            # target_threshold is used as the desired cubic side lengths
+            for size_a in np.arange(self.min_length, self.max_length, 0.1):
+                for size_b in np.arange(self.min_length, self.max_length, 0.1):
+                    for size_c in np.arange(self.min_length, self.max_length, 0.1
+                                              ):
+                        target_sc_lat_vecs = np.array([[size_a, 0, 0],[0, size_b, 0],[0, 0, size_c]])
+                        self.transformation_matrix = target_sc_lat_vecs @ np.linalg.inv(lat_vecs)  # type: ignore
+
+                        # round the entries of T and force T to be non-singular
+                        self.transformation_matrix = _round_and_make_arr_singular(  # type: ignore[assignment]
+                            self.transformation_matrix  # type: ignore[arg-type]
+                        )
+
+                        proposed_sc_lat_vecs = self.transformation_matrix @ lat_vecs
+
+                        # Find the shortest dimension length and direction
+                        a = proposed_sc_lat_vecs[0]
+                        b = proposed_sc_lat_vecs[1]
+                        c = proposed_sc_lat_vecs[2]
+
+                        length1_vec = c - _proj(c, a)  # a-c plane
+                        length2_vec = a - _proj(a, c)
+                        length3_vec = b - _proj(b, a)  # b-a plane
+                        length4_vec = a - _proj(a, b)
+                        length5_vec = b - _proj(b, c)  # b-c plane
+                        length6_vec = c - _proj(c, b)
+                        length_vecs = np.array([length1_vec, length2_vec, length3_vec, length4_vec, length5_vec, length6_vec, ])
+
+                        # Get number of atoms
+                        st = SupercellTransformation(self.transformation_matrix)
+                        superstructure = st.apply_transformation(structure)
+                        n_atoms = len(superstructure)
+
+                        # Check if constraints are satisfied
+                        if (np.min(np.linalg.norm(length_vecs,
+                                                  axis=1)) >= self.min_length and self.min_atoms <= n_atoms <= self.max_atoms) and (
+                                not self.force_90_degrees or np.all(
+                            np.absolute(np.array(superstructure.lattice.angles) - 90) < self.angle_tolerance)):
+                            return superstructure
+
+                        # Increase threshold until proposed supercell meets requirements
+                        if n_atoms > self.max_atoms:
+                            raise AttributeError("While trying to solve for the supercell, the max "
+                                                 "number of atoms was exceeded. Try lowering the number"
+                                                 "of nearest neighbor distances.")
+                    raise AttributeError("Unable to find a supercell with 90 degree angles with the given restrictions")
 
 class AddAdsorbateTransformation(AbstractTransformation):
     """Create adsorbate structures."""
