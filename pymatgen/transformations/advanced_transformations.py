@@ -1444,18 +1444,21 @@ class CubicSupercellTransformation(AbstractTransformation):
         force_diagonal: bool = False,
         force_90_degrees: bool = False,
         angle_tolerance: float = 1e-3,
+        allow_orthorhombic: bool = False,
     ):
         """
         Args:
             max_atoms: Maximum number of atoms allowed in the supercell.
             min_atoms: Minimum number of atoms allowed in the supercell.
             min_length: Minimum length of the smallest supercell lattice vector.
+            max_length: Maximum length of the largest supercell lattice vector.
             force_diagonal: If True, return a transformation with a diagonal
                 transformation matrix.
             force_90_degrees: If True, return a transformation for a supercell
                 with 90 degree angles (if possible). To avoid long run times,
                 please use max_atoms
             angle_tolerance: tolerance to determine the 90 degree angles.
+            allow_orthorhombic: allows orthorhombic cellls as well
         """
         self.min_atoms = min_atoms or -np.inf
         self.max_atoms = max_atoms or np.inf
@@ -1465,6 +1468,7 @@ class CubicSupercellTransformation(AbstractTransformation):
         self.force_90_degrees = force_90_degrees
         self.angle_tolerance = angle_tolerance
         self.transformation_matrix = None
+        self.allow_orthorhobmic = allow_orthorhombic
 
     def apply_transformation(self, structure: Structure) -> Structure:
         """The algorithm solves for a transformation matrix that makes the
@@ -1554,6 +1558,8 @@ class CubicSupercellTransformation(AbstractTransformation):
             raise AttributeError("Unable to find cubic supercell")
         else:
             # target_threshold is used as the desired cubic side lengths
+
+
             for size_a in np.arange(self.min_length, self.max_length, 0.1):
                 for size_b in np.arange(self.min_length, self.max_length, 0.1):
                     for size_c in np.arange(self.min_length, self.max_length, 0.1
